@@ -46,6 +46,7 @@ namespace Kinect_2_Streams_Recorder
         internal TimeSpan duration;
         internal uint frameLengthInBytes;
         internal ulong bodyTrackingId;
+        internal TimeSpan relativeTimeStart;
     }
 
     public unsafe struct ImageDataUInt
@@ -650,6 +651,8 @@ namespace Kinect_2_Streams_Recorder
                             byte[] pixels = new byte[this.audioSource.SubFrameLengthInBytes];
                             
                             tempAudioData.pixels = pixels;
+
+                            tempAudioData.relativeTimeStart = frameList[0].RelativeTimeStart;
 
                             tempAudioData.timestamp = audiotimestamp;
                             
@@ -1472,7 +1475,7 @@ namespace Kinect_2_Streams_Recorder
 
                 this.audioBuffer.TryDequeue(out tempAudioData);
 
-                this.audioDataFile.Write(tempAudioData.timestamp + " " + tempAudioData.relativeTime + " " + 
+                this.audioDataFile.Write(tempAudioData.relativeTimeStart.Ticks + " " + tempAudioData.relativeTime.Ticks + " " + tempAudioData.timestamp + " " + 
                     tempAudioData.beamAngle + " " + tempAudioData.beamAngleConfidence + " " + 
                     tempAudioData.audioBeamMode + " " + tempAudioData.duration + " " + 
                     tempAudioData.frameLengthInBytes + " " + tempAudioData.bodyTrackingId + "\n");
@@ -1727,9 +1730,11 @@ namespace Kinect_2_Streams_Recorder
 
                         this.statusText.Text = "Recording session finished!";
 
-                        long  seconds = this.last_frame_time.Ticks - this.first_frame_time.Ticks;
+                        long ticks = this.last_frame_time.Ticks - this.first_frame_time.Ticks;
 
-                        long  ideal_frames = seconds / 10000000 * 30;
+                        long ideal_frames = ticks / 10000000 * 30;
+
+                        double ideal_frames_audio = ticks / 10000000.0 * 1000/16;
 
                         this.log.WriteLine("Color frames recorded: " + this.counters[0]);
                         this.log.WriteLine("Depth frames recorded: " + this.counters[1]);
@@ -1738,8 +1743,10 @@ namespace Kinect_2_Streams_Recorder
                         this.log.WriteLine("Face frames recorded: " + this.counters[4]);
                         this.log.WriteLine("HDFace frames recorded: " + this.counters[5]);
                         this.log.WriteLine("Audio frames recorded: " + this.counters[6]);
-                        this.log.WriteLine("Seconds recorded: " + seconds + 
-                            " Frames Number should be: " + ideal_frames);
+                        this.log.WriteLine("Seconds recorded: " + ticks / 10000000);
+                        this.log.WriteLine("Ticks recorded: " + ticks + 
+                            " Frames Number should be: " + ideal_frames + 
+                            " Audio Frames Number should be: " + ideal_frames_audio);
                         // this.log.WriteLine("According with kinect relative times, " + 
                         //     " frames Number should be: " + ideal_frames_by_kinect_relative_times);
 
