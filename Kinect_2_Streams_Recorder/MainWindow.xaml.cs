@@ -973,7 +973,7 @@ namespace Kinect_2_Streams_Recorder
             if (this.streamsToRecord[6]) {
                 System.IO.Directory.CreateDirectory(this.audioDir);
                 this.audioDataFile = new System.IO.StreamWriter(Path.Combine(this.audioDir, "audioData.csv"));
-                this.audioFile = Path.Combine(this.audioDir, "audio.wav");
+                this.audioFile = Path.Combine(this.audioDir, "audio.raw");
             }
 
             this.calib = new System.IO.StreamWriter(Path.Combine(this.directoryToSave, "calib.txt"));
@@ -1409,10 +1409,10 @@ namespace Kinect_2_Streams_Recorder
 
                 Body[] bodies = tempBodyData.bodies;
 
-                this.skelfile.Write(tempBodyData.relativeTime.Ticks + "," + tempBodyData.timestamp);
-
                 foreach (Body body in bodies)
                 {
+                    this.skelfile.Write(tempBodyData.relativeTime.Ticks + "," + tempBodyData.timestamp);
+
                     IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
 
                     // convert the joint points to depth (display) space
