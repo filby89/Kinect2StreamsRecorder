@@ -1472,10 +1472,10 @@ namespace Kinect_2_Streams_Recorder
 
                 this.audioBuffer.TryDequeue(out tempAudioData);
 
-                this.audioDataFile.Write(tempAudioData.timestamp + "," + tempAudioData.relativeTime + "," + 
-                    tempAudioData.beamAngle + "," + tempAudioData.beamAngleConfidence + "," + 
-                    tempAudioData.audioBeamMode + "," + tempAudioData.duration + "," + 
-                    tempAudioData.frameLengthInBytes + "," + tempAudioData.bodyTrackingId + "\n");
+                this.audioDataFile.Write(tempAudioData.timestamp + " " + tempAudioData.relativeTime + " " + 
+                    tempAudioData.beamAngle + " " + tempAudioData.beamAngleConfidence + " " + 
+                    tempAudioData.audioBeamMode + " " + tempAudioData.duration + " " + 
+                    tempAudioData.frameLengthInBytes + " " + tempAudioData.bodyTrackingId + "\n");
 
                 AppendAllBytes(this.audioFile, tempAudioData.pixels);
                 
