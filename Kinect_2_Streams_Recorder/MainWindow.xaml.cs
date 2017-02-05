@@ -826,7 +826,7 @@ namespace Kinect_2_Streams_Recorder
                                 byte[] pixels = new byte[bodyIndexFrame.BodyIndexFrameSource.FrameDescription.Height *
                                                      bodyIndexFrame.BodyIndexFrameSource.FrameDescription.Width *
                                                      bodyIndexFrame.BodyIndexFrameSource.FrameDescription.BytesPerPixel];
-                                Debug.WriteLine(bodyIndexFrame.BodyIndexFrameSource.FrameDescription.BytesPerPixel);
+                                //Debug.WriteLine(bodyIndexFrame.BodyIndexFrameSource.FrameDescription.BytesPerPixel);
                                 tempImageData.pixels = pixels;
 
                                 tempImageData.counter = this.multiSourceFrameCounter;
@@ -1261,7 +1261,7 @@ namespace Kinect_2_Streams_Recorder
                 
                 bmp32.Save(path, jpgEncoder, myEncoderParameters);
                 
-                this.colorDataFile.WriteLine(tempImageData.counter + "," + tempImageData.relativeTime.Ticks + "," + tempImageData.timestamp);
+                this.colorDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + tempImageData.timestamp);
 
                 bmp32.Dispose();
                 bmp32 = null;
@@ -1342,7 +1342,7 @@ namespace Kinect_2_Streams_Recorder
 
                 File.WriteAllBytes(path, pixels);
 
-                this.depthDataFile.WriteLine(tempImageData.counter + "," + tempImageData.relativeTime.Ticks + "," + tempImageData.timestamp);
+                this.depthDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + tempImageData.timestamp);
 
                 pixels = null;
                 this.counters[1] += 1;
@@ -1365,7 +1365,7 @@ namespace Kinect_2_Streams_Recorder
 
                 File.WriteAllBytes(path, pixels);
 
-                this.bodyIndexDataFile.WriteLine(tempImageData.counter + "," + tempImageData.relativeTime.Ticks + "," + tempImageData.timestamp);
+                this.bodyIndexDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + tempImageData.timestamp);
 
                 //                 var bodyIndexRect = new Rectangle(0, 0,
                 //                                               this.bodyIndexFrameDescription.Width,
@@ -1411,7 +1411,7 @@ namespace Kinect_2_Streams_Recorder
 
                 foreach (Body body in bodies)
                 {
-                    this.skelfile.Write(tempBodyData.relativeTime.Ticks + "," + tempBodyData.timestamp);
+                    this.skelfile.Write(tempBodyData.relativeTime.Ticks + ";" + tempBodyData.timestamp + ";");
 
                     IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
 
@@ -1435,15 +1435,15 @@ namespace Kinect_2_Streams_Recorder
 
                         ColorSpacePoint colorSpacePoint = this.coordinateMapper.MapCameraPointToColorSpace(position);
 
-                        this.skelfile.Write(jointType + "," + body.Joints[jointType].TrackingState + "," + body.Joints[jointType].Position.X + ", " + body.Joints[jointType].Position.Y + ", " + body.Joints[jointType].Position.Z + "," +
-                            depthSpacePoint.X + "," + depthSpacePoint.Y + "," + colorSpacePoint.X + "," + colorSpacePoint.Y + "," + JointOrientations[jointType].Orientation.X + "," + JointOrientations[jointType].Orientation.Y + "," +
-                            JointOrientations[jointType].Orientation.Z + "," + JointOrientations[jointType].Orientation.W + ",");
+                        this.skelfile.Write(jointType + ";" + body.Joints[jointType].TrackingState + ";" + body.Joints[jointType].Position.X + ", " + body.Joints[jointType].Position.Y + ", " + body.Joints[jointType].Position.Z + ";" +
+                            depthSpacePoint.X + ";" + depthSpacePoint.Y + ";" + colorSpacePoint.X + ";" + colorSpacePoint.Y + ";" + JointOrientations[jointType].Orientation.X + ";" + JointOrientations[jointType].Orientation.Y + ";" +
+                            JointOrientations[jointType].Orientation.Z + ";" + JointOrientations[jointType].Orientation.W + ";");
                     }
 
-                    this.skelfile.Write(body.ClippedEdges + "," + body.HandLeftState + "," + body.HandLeftConfidence +
-                            "," + body.HandRightState + "," + body.HandRightConfidence + "," +
-                            body.IsRestricted + "," + body.IsTracked + "," + Body.JointCount + "," +
-                            body.TrackingId + "," + body.Lean.X + "," + body.Lean.Y + "," +
+                    this.skelfile.Write(body.ClippedEdges + ";" + body.HandLeftState + ";" + body.HandLeftConfidence +
+                            ";" + body.HandRightState + ";" + body.HandRightConfidence + ";" +
+                            body.IsRestricted + ";" + body.IsTracked + ";" + Body.JointCount + ";" +
+                            body.TrackingId + ";" + body.Lean.X + ";" + body.Lean.Y + ";" +
                             body.LeanTrackingState + "\n");
 
                 }
@@ -1475,10 +1475,10 @@ namespace Kinect_2_Streams_Recorder
 
                 this.audioBuffer.TryDequeue(out tempAudioData);
 
-                this.audioDataFile.Write(tempAudioData.relativeTimeStart.Ticks + " " + tempAudioData.relativeTime.Ticks + " " + tempAudioData.timestamp + " " + 
-                    tempAudioData.beamAngle + " " + tempAudioData.beamAngleConfidence + " " + 
-                    tempAudioData.audioBeamMode + " " + tempAudioData.duration + " " + 
-                    tempAudioData.frameLengthInBytes + " " + tempAudioData.bodyTrackingId + "\n");
+                this.audioDataFile.Write(tempAudioData.relativeTimeStart.Ticks + ";" + tempAudioData.relativeTime.Ticks + ";" + tempAudioData.timestamp + ";" + 
+                    tempAudioData.beamAngle + ";" + tempAudioData.beamAngleConfidence + ";" + 
+                    tempAudioData.audioBeamMode + ";" + tempAudioData.duration + ";" + 
+                    tempAudioData.frameLengthInBytes + ";" + tempAudioData.bodyTrackingId + "\n");
 
                 AppendAllBytes(this.audioFile, tempAudioData.pixels);
                 
@@ -1512,35 +1512,35 @@ namespace Kinect_2_Streams_Recorder
 
                 if (face != null)
                 {
-                    this.facefile.Write(tempFaceData.relativeTime.Ticks + "," + tempFaceData.timestamp + "," + face.TrackingId + ",");
+                    this.facefile.Write(tempFaceData.relativeTime.Ticks + ";" + tempFaceData.timestamp + ";" + face.TrackingId + ";");
 
-                    this.facefile.Write(face.FaceBoundingBoxInColorSpace.Bottom + "," + face.FaceBoundingBoxInColorSpace.Left + "," + face.FaceBoundingBoxInColorSpace.Top + ", " + face.FaceBoundingBoxInColorSpace.Right +
-                        "," + face.FaceBoundingBoxInInfraredSpace.Bottom + "," + face.FaceBoundingBoxInInfraredSpace.Left + "," + face.FaceBoundingBoxInInfraredSpace.Top + ", " + face.FaceBoundingBoxInInfraredSpace.Right + 
-                        ",");
+                    this.facefile.Write(face.FaceBoundingBoxInColorSpace.Bottom + ";" + face.FaceBoundingBoxInColorSpace.Left + ";" + face.FaceBoundingBoxInColorSpace.Top + ", " + face.FaceBoundingBoxInColorSpace.Right +
+                        ";" + face.FaceBoundingBoxInInfraredSpace.Bottom + ";" + face.FaceBoundingBoxInInfraredSpace.Left + ";" + face.FaceBoundingBoxInInfraredSpace.Top + ", " + face.FaceBoundingBoxInInfraredSpace.Right +
+                        ";");
 
                     IReadOnlyDictionary<FaceProperty, DetectionResult> faceproperties = face.FaceProperties;
 
                     foreach (FaceProperty faceProperty in faceproperties.Keys)
                     {
-                        this.facefile.Write(faceProperty + "," + face.FaceProperties[faceProperty] + ",");
+                        this.facefile.Write(faceProperty + ";" + face.FaceProperties[faceProperty] + ";");
                     }
 
-                    IReadOnlyDictionary<FacePointType, Microsoft.Kinect.PointF> facepoints= face.FacePointsInColorSpace;
+                    IReadOnlyDictionary<FacePointType, Microsoft.Kinect.PointF> facepoints = face.FacePointsInColorSpace;
 
                     foreach (FacePointType facePointType in facepoints.Keys)
                     {
-                        this.facefile.Write(facePointType + "," + face.FacePointsInColorSpace[facePointType].X + "," + face.FacePointsInColorSpace[facePointType].Y + ",");
+                        this.facefile.Write(facePointType + ";" + face.FacePointsInColorSpace[facePointType].X + ";" + face.FacePointsInColorSpace[facePointType].Y + ";");
                     }
 
                     facepoints = face.FacePointsInInfraredSpace;
 
                     foreach (FacePointType facePointType in facepoints.Keys)
                     {
-                        this.facefile.Write(facePointType + "," + face.FacePointsInInfraredSpace[facePointType].X + "," + face.FacePointsInInfraredSpace[facePointType].Y + ",");
+                        this.facefile.Write(facePointType + ";" + face.FacePointsInInfraredSpace[facePointType].X + ";" + face.FacePointsInInfraredSpace[facePointType].Y + ";");
                     }
 
-                    this.facefile.Write(face.FaceRotationQuaternion.X + "," + face.FaceRotationQuaternion.Y + "," +
-                        face.FaceRotationQuaternion.Z + "," + face.FaceRotationQuaternion.W + ",");
+                    this.facefile.Write(face.FaceRotationQuaternion.X + ";" + face.FaceRotationQuaternion.Y + ";" +
+                        face.FaceRotationQuaternion.Z + ";" + face.FaceRotationQuaternion.W + ";");
 
                     double pitch, roll, yaw = 0;
 
@@ -1548,7 +1548,7 @@ namespace Kinect_2_Streams_Recorder
                         face.FaceRotationQuaternion,
                             out pitch, out yaw, out roll);
 
-                    this.facefile.Write(yaw + "," + pitch + "," + roll + "\n");
+                    this.facefile.Write(yaw + ";" + pitch + ";" + roll + "\n");
 
                     this.counters[4] += 1;
                 }
@@ -1596,7 +1596,7 @@ namespace Kinect_2_Streams_Recorder
 
                 var vertices = tempHDFaceData.vertices;
 
-                this.hdfacefile.Write(tempHDFaceData.relativeTime.Ticks + "," + tempHDFaceData.timestamp + "," + tempHDFaceData.trackingId + "," + tempHDFaceData.isTrackingIdValid + ",");
+                this.hdfacefile.Write(tempHDFaceData.relativeTime.Ticks + ";" + tempHDFaceData.timestamp + ";" + tempHDFaceData.trackingId + ";" + tempHDFaceData.isTrackingIdValid + ";");
 
                 DepthSpacePoint depthSpacePoint;
                 ColorSpacePoint colorSpacePoint;
@@ -1604,14 +1604,18 @@ namespace Kinect_2_Streams_Recorder
                 for (int i = 0; i < vertices.Count; i++)
                 {
                     // edw to hdfacefile kolaei !
-                    this.hdfacefile.Write(vertices[i].X + "," + vertices[i].Y + "," + vertices[i].Z + ",");
+                    this.hdfacefile.Write(vertices[i].X + ";" + vertices[i].Y + ";" + vertices[i].Z + ";");
 
                     depthSpacePoint = this.coordinateMapper.MapCameraPointToDepthSpace(vertices[i]);
 
                     colorSpacePoint = this.coordinateMapper.MapCameraPointToColorSpace(vertices[i]);
 
-                    this.hdfacefile.Write(depthSpacePoint.X + "," + depthSpacePoint.Y + ",");
-                    this.hdfacefile.Write(colorSpacePoint.X + "," + colorSpacePoint.Y + ",");
+                    Debug.WriteLine(vertices[i].X);
+                    Debug.WriteLine(vertices[i].Y);
+                    Debug.WriteLine(vertices[i].Z);
+
+                    this.hdfacefile.Write(depthSpacePoint.X + ";" + depthSpacePoint.Y + ";");
+                    this.hdfacefile.Write(colorSpacePoint.X + ";" + colorSpacePoint.Y + ";");
                 }
 
 
@@ -1620,11 +1624,11 @@ namespace Kinect_2_Streams_Recorder
 
                 foreach (FaceShapeAnimations faceShapeAnimation in faceAnimations.Keys)
                 {
-                    this.hdfacefile.Write(faceShapeAnimation + "," + hdface.AnimationUnits[faceShapeAnimation] + ",");
+                    this.hdfacefile.Write(faceShapeAnimation + ";" + hdface.AnimationUnits[faceShapeAnimation] + ";");
                 }
 
-                this.hdfacefile.Write(hdface.FaceOrientation.X + "," + hdface.FaceOrientation.Y + "," +
-                    hdface.FaceOrientation.Z + "," + hdface.FaceOrientation.W + ",");
+                this.hdfacefile.Write(hdface.FaceOrientation.X + ";" + hdface.FaceOrientation.Y + ";" +
+                    hdface.FaceOrientation.Z + ";" + hdface.FaceOrientation.W + ";");
 
                 double pitch, roll, yaw = 0;
 
@@ -1632,17 +1636,17 @@ namespace Kinect_2_Streams_Recorder
                     hdface.FaceOrientation,
                         out pitch, out yaw, out roll);
 
-                this.hdfacefile.Write(yaw + "," + pitch + "," + roll + ",");
+                this.hdfacefile.Write(yaw + ";" + pitch + ";" + roll + ";");
 
-                this.hdfacefile.Write(hdface.HeadPivotPoint.X + "," + hdface.HeadPivotPoint.Y + "," + hdface.HeadPivotPoint.Z + ",");
+                this.hdfacefile.Write(hdface.HeadPivotPoint.X + ";" + hdface.HeadPivotPoint.Y + ";" + hdface.HeadPivotPoint.Z + ";");
 
                 depthSpacePoint = this.coordinateMapper.MapCameraPointToDepthSpace(hdface.HeadPivotPoint);
 
                 colorSpacePoint = this.coordinateMapper.MapCameraPointToColorSpace(hdface.HeadPivotPoint);
 
-                this.hdfacefile.Write(depthSpacePoint.X + "," + depthSpacePoint.Y + ",");
+                this.hdfacefile.Write(depthSpacePoint.X + ";" + depthSpacePoint.Y + ";");
 
-                this.hdfacefile.Write(colorSpacePoint.X + "," + colorSpacePoint.Y + ",");
+                this.hdfacefile.Write(colorSpacePoint.X + ";" + colorSpacePoint.Y + ";");
 
                 this.hdfacefile.Write(hdface.Quality + "\n");
 
@@ -1659,13 +1663,13 @@ namespace Kinect_2_Streams_Recorder
             int len = 0;
             for (int i = 0; i < depthToCameraTable.GetLength(len); i++)
             {
-                this.calib.Write(depthToCameraTable[i].X + "," + depthToCameraTable[i].Y);
+                this.calib.Write(depthToCameraTable[i].X + ";" + depthToCameraTable[i].Y);
             }
 
             var intrinsics = this.coordinateMapper.GetDepthCameraIntrinsics();
-            this.calib.Write(intrinsics.FocalLengthX + "," + intrinsics.FocalLengthY + "," +
-                intrinsics.PrincipalPointX + "," + intrinsics.PrincipalPointY + "," +
-                intrinsics.RadialDistortionSecondOrder + "," + intrinsics.RadialDistortionFourthOrder + "," +
+            this.calib.Write(intrinsics.FocalLengthX + ";" + intrinsics.FocalLengthY + ";" +
+                intrinsics.PrincipalPointX + ";" + intrinsics.PrincipalPointY + ";" +
+                intrinsics.RadialDistortionSecondOrder + ";" + intrinsics.RadialDistortionFourthOrder + ";" +
                 intrinsics.RadialDistortionSixthOrder);
 
             this.calib.Close();
