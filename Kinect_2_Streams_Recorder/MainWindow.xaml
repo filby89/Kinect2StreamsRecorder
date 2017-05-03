@@ -12,7 +12,7 @@
         <TextBox x:Name="secondary_path" HorizontalAlignment="Left" Height="23" Margin="134,61,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="362"/>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="30,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Specify which streams to record and press the button to start recording" Height="17"/>
         <Button x:Name="start" Content="Start Recording" HorizontalAlignment="Left" Margin="508,325,0,0" VerticalAlignment="Top" Width="148" Foreground="Black" Click="start_Click" Height="21" IsEnabled="False"/>
-        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Margin="134,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="271" FontSize="10" Text="Default is: C:\Kinect2StreamsRecorder"/>
+        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Margin="134,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="271" FontSize="10" Text="Default is: E:\Kinect2StreamsRecorder"/>
         <Button x:Name="browse_button" Content="Browse" HorizontalAlignment="Left" Margin="134,17,0,0" VerticalAlignment="Top" Width="68" Foreground="Black"  Click="browse_Click"/>
         <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Margin="224,17,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <TextBlock x:Name="textBlock3" HorizontalAlignment="Left" Margin="224,17,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>

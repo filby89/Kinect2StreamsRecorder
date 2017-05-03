@@ -322,7 +322,7 @@ namespace Kinect_2_Streams_Recorder
 
         private bool buffersNotEmpty = false;
 
-        private string main_path_val = "C:\\";
+        private string main_path_val = "E:\\";
 
         // number of kinect streams to consider
         private int streams_nr = 7;
@@ -1435,7 +1435,7 @@ namespace Kinect_2_Streams_Recorder
 
                         ColorSpacePoint colorSpacePoint = this.coordinateMapper.MapCameraPointToColorSpace(position);
 
-                        this.skelfile.Write(jointType + ";" + body.Joints[jointType].TrackingState + ";" + body.Joints[jointType].Position.X + ", " + body.Joints[jointType].Position.Y + ", " + body.Joints[jointType].Position.Z + ";" +
+                        this.skelfile.Write(jointType + ";" + body.Joints[jointType].TrackingState + ";" + body.Joints[jointType].Position.X + ";" + body.Joints[jointType].Position.Y + ";" + body.Joints[jointType].Position.Z + ";" +
                             depthSpacePoint.X + ";" + depthSpacePoint.Y + ";" + colorSpacePoint.X + ";" + colorSpacePoint.Y + ";" + JointOrientations[jointType].Orientation.X + ";" + JointOrientations[jointType].Orientation.Y + ";" +
                             JointOrientations[jointType].Orientation.Z + ";" + JointOrientations[jointType].Orientation.W + ";");
                     }
@@ -1514,8 +1514,8 @@ namespace Kinect_2_Streams_Recorder
                 {
                     this.facefile.Write(tempFaceData.relativeTime.Ticks + ";" + tempFaceData.timestamp + ";" + face.TrackingId + ";");
 
-                    this.facefile.Write(face.FaceBoundingBoxInColorSpace.Bottom + ";" + face.FaceBoundingBoxInColorSpace.Left + ";" + face.FaceBoundingBoxInColorSpace.Top + ", " + face.FaceBoundingBoxInColorSpace.Right +
-                        ";" + face.FaceBoundingBoxInInfraredSpace.Bottom + ";" + face.FaceBoundingBoxInInfraredSpace.Left + ";" + face.FaceBoundingBoxInInfraredSpace.Top + ", " + face.FaceBoundingBoxInInfraredSpace.Right +
+                    this.facefile.Write(face.FaceBoundingBoxInColorSpace.Bottom + ";" + face.FaceBoundingBoxInColorSpace.Left + ";" + face.FaceBoundingBoxInColorSpace.Top + ";" + face.FaceBoundingBoxInColorSpace.Right +
+                        ";" + face.FaceBoundingBoxInInfraredSpace.Bottom + ";" + face.FaceBoundingBoxInInfraredSpace.Left + ";" + face.FaceBoundingBoxInInfraredSpace.Top + ";" + face.FaceBoundingBoxInInfraredSpace.Right +
                         ";");
 
                     IReadOnlyDictionary<FaceProperty, DetectionResult> faceproperties = face.FaceProperties;
@@ -1609,11 +1609,11 @@ namespace Kinect_2_Streams_Recorder
                     depthSpacePoint = this.coordinateMapper.MapCameraPointToDepthSpace(vertices[i]);
 
                     colorSpacePoint = this.coordinateMapper.MapCameraPointToColorSpace(vertices[i]);
-
+/*
                     Debug.WriteLine(vertices[i].X);
                     Debug.WriteLine(vertices[i].Y);
                     Debug.WriteLine(vertices[i].Z);
-
+                    */
                     this.hdfacefile.Write(depthSpacePoint.X + ";" + depthSpacePoint.Y + ";");
                     this.hdfacefile.Write(colorSpacePoint.X + ";" + colorSpacePoint.Y + ";");
                 }
