@@ -1260,9 +1260,10 @@ namespace Kinect_2_Streams_Recorder
                 myEncoderParameters.Param[0] = myEncoderParameter;
                 
                 bmp32.Save(path, jpgEncoder, myEncoderParameters);
-                
-                this.colorDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + tempImageData.timestamp);
-
+                lock (this.colorDataFile)
+                {
+                    this.colorDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + tempImageData.timestamp);
+                }
                 bmp32.Dispose();
                 bmp32 = null;
 
@@ -1279,7 +1280,10 @@ namespace Kinect_2_Streams_Recorder
                         if (thread.ManagedThreadId  != colorSaveThreadId) {
                             this.doubleSaveThread = false;
                             this.stopSecondThreadInColor = false;
-                            this.log.WriteLine("Stopping the second thread to save color stream");
+                            lock (this.log)
+                            {
+                                this.log.WriteLine("Stopping the second thread to save color stream");
+                            }
                             return;
                         }
                     }
@@ -1707,7 +1711,10 @@ namespace Kinect_2_Streams_Recorder
                 {
                     // if we have many color frames allocate a second thread to them
                     if (this.colorBuffer.Count > 20 && this.doubleSaveThread == false) {
-                        this.log.WriteLine("Allocating a second thread to save color stream");
+                        lock (this.log)
+                        {
+                            this.log.WriteLine("Allocating a second thread to save color stream");
+                        }
                         this.doubleSaveThread = true;
                         this.colorSaveThread2 = new Thread(new ThreadStart(this.saveColor));
                         this.colorSaveThread2.IsBackground = true;
@@ -1739,20 +1746,23 @@ namespace Kinect_2_Streams_Recorder
                         long ideal_frames = ticks / 10000000 * 30;
 
                         double ideal_frames_audio = ticks / 10000000.0 * 1000/16;
+                        lock (this.log)
+                        {
+                            this.log.WriteLine("Color frames recorded: " + this.counters[0]);
+                            this.log.WriteLine("Depth frames recorded: " + this.counters[1]);
+                            this.log.WriteLine("Body Index frames recorded: " + this.counters[2]);
+                            this.log.WriteLine("Skeleton frames recorded: " + this.counters[3]);
+                            this.log.WriteLine("Face frames recorded: " + this.counters[4]);
+                            this.log.WriteLine("HDFace frames recorded: " + this.counters[5]);
+                            this.log.WriteLine("Audio frames recorded: " + this.counters[6]);
+                            this.log.WriteLine("Seconds recorded: " + ticks / 10000000);
+                            this.log.WriteLine("Ticks recorded: " + ticks + 
+                                " Frames Number should be: " + ideal_frames + 
+                                " Audio Frames Number should be: " + ideal_frames_audio);
+                                // this.log.WriteLine("According with kinect relative times, " + 
+                                //     " frames Number should be: " + ideal_frames_by_kinect_relative_times);
 
-                        this.log.WriteLine("Color frames recorded: " + this.counters[0]);
-                        this.log.WriteLine("Depth frames recorded: " + this.counters[1]);
-                        this.log.WriteLine("Body Index frames recorded: " + this.counters[2]);
-                        this.log.WriteLine("Skeleton frames recorded: " + this.counters[3]);
-                        this.log.WriteLine("Face frames recorded: " + this.counters[4]);
-                        this.log.WriteLine("HDFace frames recorded: " + this.counters[5]);
-                        this.log.WriteLine("Audio frames recorded: " + this.counters[6]);
-                        this.log.WriteLine("Seconds recorded: " + ticks / 10000000);
-                        this.log.WriteLine("Ticks recorded: " + ticks + 
-                            " Frames Number should be: " + ideal_frames + 
-                            " Audio Frames Number should be: " + ideal_frames_audio);
-                        // this.log.WriteLine("According with kinect relative times, " + 
-                        //     " frames Number should be: " + ideal_frames_by_kinect_relative_times);
+                        }
 
                         this.browse_button.IsEnabled = true;
                         this.secondary_path.IsEnabled = true;
