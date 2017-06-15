@@ -32,7 +32,11 @@ namespace Kinect_2_Streams_Recorder
         public int counter;
         public TimeSpan relativeTime;
         public long timestamp;
+        public UInt16 minDepth;
+        public UInt16 maxDepth;
     }
+
+
 
     public unsafe struct AudioData
     {
@@ -70,7 +74,10 @@ namespace Kinect_2_Streams_Recorder
         public FaceFrameResult face;
         public int counter;
         public TimeSpan relativeTime;
+        public TimeSpan relativeTimeColor;
         public long timestamp;
+        internal ulong trackingId;
+        internal bool isTrackingIdValid;
     }
 
     public unsafe struct HDFaceData
@@ -79,6 +86,7 @@ namespace Kinect_2_Streams_Recorder
         public IReadOnlyList<CameraSpacePoint> vertices;
         public int counter;
         public TimeSpan relativeTime;
+        public TimeSpan relativeTimeColor;
         public long timestamp;
         internal ulong trackingId;
         internal bool isTrackingIdValid;
@@ -278,6 +286,8 @@ namespace Kinect_2_Streams_Recorder
         private bool stopRecordingThreads = false;
 
 
+        private DepthSpacePoint[] colorMappedToDepthPoints = null;
+    
 
         private bool doubleSaveThread = false;
 
@@ -372,6 +382,8 @@ namespace Kinect_2_Streams_Recorder
 
             // get FrameDescription from DepthFrameSource
             this.depthFrameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
+
+            this.colorMappedToDepthPoints = new DepthSpacePoint[this.colorFrameDescription.Width * this.colorFrameDescription.Height];
 
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
@@ -786,20 +798,39 @@ namespace Kinect_2_Streams_Recorder
                                 tempImageData.counter = this.multiSourceFrameCounter;
                                 tempImageData.relativeTime = depthFrame.RelativeTime;
                                 tempImageData.timestamp = this.timestamp;
+                                tempImageData.minDepth = depthFrame.DepthMinReliableDistance;
+                                tempImageData.maxDepth = depthFrame.DepthMaxReliableDistance;
+                                
 
 
                                 // Convert the depth frame into the byte buffer.
                                 using (var depthFrameBuffer = depthFrame.LockImageBuffer())
                                 {
                                     Marshal.Copy(depthFrameBuffer.UnderlyingBuffer, tempImageData.pixels, 0, (int)depthFrameBuffer.Size);
+
+                                    this.coordinateMapper.MapColorFrameToDepthSpaceUsingIntPtr(
+                                        depthFrameBuffer.UnderlyingBuffer,
+                                        depthFrameBuffer.Size,
+                                        this.colorMappedToDepthPoints);
                                 }
 
                                 this.depthBuffer.Enqueue(tempImageData);
-                                // this.log.WriteLine("Depth Frame " + this.multiSourceFrameCounter + " added to buffer");
+
+                                // mapping
+//                                ImageData tempImageDataMapped = new ImageData();
+//                                tempImageDataMapped.pixels = this.colorMappedToDepthPoints;
+
+//                                tempImageDataMapped.counter = this.multiSourceFrameCounter;
+//                                tempImageDataMapped.relativeTime = depthFrame.RelativeTime;
+//                                tempImageDataMapped.timestamp = this.timestamp;
+
+
+  //                              this.colorMappedToDepthBuffer.Enqueue(tempImageDataMapped);
+                                // end mapping
 
                                 // If you wish to filter by reliable depth distance, uncomment the following line:
                                 //// maxDepth = depthFrame.DepthMaxReliableDistance
-                                
+
                                 //this.ProcessDepthFrameDataAndBuffer(depthBuffer.UnderlyingBuffer, depthBuffer.Size, depthFrame.DepthMinReliableDistance, maxDepth, depthFrame.RelativeTime);
                             }
                         }
@@ -915,6 +946,8 @@ namespace Kinect_2_Streams_Recorder
                     tempHDFaceData.vertices = this.currentFaceModel.CalculateVerticesForAlignment(faceAlignment);
 
                     tempHDFaceData.relativeTime = frame.BodyFrameReference.RelativeTime;
+                    tempHDFaceData.relativeTimeColor = frame.ColorFrameReference.RelativeTime;
+
                     tempHDFaceData.timestamp = hdfacetimestamp;
 
                     tempHDFaceData.trackingId = frame.TrackingId;
@@ -952,7 +985,7 @@ namespace Kinect_2_Streams_Recorder
 
             if (this.streamsToRecord[2]) {
                 System.IO.Directory.CreateDirectory(this.bodyindexDir);
-                this.bodyIndexDataFile = new System.IO.StreamWriter(Path.Combine(this.depthDir, "bodyIndexData.txt"));
+                this.bodyIndexDataFile = new System.IO.StreamWriter(Path.Combine(this.bodyindexDir, "bodyIndexData.csv"));
             }
 
             if (this.streamsToRecord[3]) {
@@ -1115,7 +1148,10 @@ namespace Kinect_2_Streams_Recorder
 
                             facedata.face = faceFrame.FaceFrameResult;
                             facedata.relativeTime = faceFrame.BodyFrameReference.RelativeTime;
+                            facedata.relativeTimeColor = faceFrame.ColorFrameReference.RelativeTime;
                             facedata.timestamp = facetimestamp;
+                            facedata.trackingId = faceFrame.TrackingId;
+                            facedata.isTrackingIdValid = faceFrame.IsTrackingIdValid;
 
                             this.faceBuffer.Enqueue(facedata);
                         }
@@ -1318,39 +1354,15 @@ namespace Kinect_2_Streams_Recorder
                 this.depthBuffer.TryDequeue(out tempImageData);
 
                 byte []pixels = tempImageData.pixels;
-
-                // byte []pixels = this.depthBuffer.TryDequeue().pixels;
-                // // Allocate a new byte buffer to store this RGB frame and timestamp.
-
-                // var depthRect = new Rectangle(0, 0,
-                //                               this.depthFrameDescription.Width,
-                //                               this.depthFrameDescription.Height);
-
-                // // Wrap RGB frames into bitmap buffers.
-                // var bmp32 = new Bitmap(this.depthFrameDescription.Width,
-                //                        this.depthFrameDescription.Height,
-                //                        System.Drawing.Imaging.PixelFormat.Format16bppGrayScale);
-
+                
                 string path = Path.Combine(this.depthDir, tempImageData.relativeTime.Ticks + "_" + tempImageData.counter + ".txt");
-
-                // Call unmanaged code
-
-                // Lock the bitmap's bits.
-                // System.Drawing.Imaging.BitmapData bmpData =
-                //     bmp32.LockBits(depthRect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp32.PixelFormat);
-                // IntPtr bmpPtr = bmpData.Scan0;
-                // Marshal.Copy(pixels, 0, bmpPtr, pixels.Length);
-                // bmp32.UnlockBits(bmpData);
-
-                // bmp32.Save(path, ImageFormat.Bmp);
 
                 File.WriteAllBytes(path, pixels);
 
-                this.depthDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + tempImageData.timestamp);
+                this.depthDataFile.WriteLine(tempImageData.counter + ";" + tempImageData.relativeTime.Ticks + ";" + ";" + tempImageData.timestamp + ";" + tempImageData.minDepth + ";" + tempImageData.maxDepth);
 
                 pixels = null;
                 this.counters[1] += 1;
-                // this.elapsedRecordedFrames[1] += 1;
             }
         }
 
@@ -1415,7 +1427,7 @@ namespace Kinect_2_Streams_Recorder
 
                 foreach (Body body in bodies)
                 {
-                    this.skelfile.Write(tempBodyData.relativeTime.Ticks + ";" + tempBodyData.timestamp + ";");
+                    this.skelfile.Write(tempBodyData.counter + ";" + tempBodyData.relativeTime.Ticks + ";" + tempBodyData.timestamp + ";");
 
                     IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
 
@@ -1516,7 +1528,8 @@ namespace Kinect_2_Streams_Recorder
 
                 if (face != null)
                 {
-                    this.facefile.Write(tempFaceData.relativeTime.Ticks + ";" + tempFaceData.timestamp + ";" + face.TrackingId + ";");
+                    this.facefile.Write(tempFaceData.relativeTime.Ticks + ";" + tempFaceData.relativeTimeColor.Ticks + ";" + tempFaceData.timestamp + ";" + face.TrackingId + ";" + tempFaceData.isTrackingIdValid + ";");
+//                    this.hdfacefile.Write(tempHDFaceData.relativeTime.Ticks + ";" + tempHDFaceData.relativeTimeColor.Ticks + ";" + tempHDFaceData.timestamp + ";" + tempHDFaceData.trackingId + ";" + tempHDFaceData.isTrackingIdValid + ";");
 
                     this.facefile.Write(face.FaceBoundingBoxInColorSpace.Bottom + ";" + face.FaceBoundingBoxInColorSpace.Left + ";" + face.FaceBoundingBoxInColorSpace.Top + ";" + face.FaceBoundingBoxInColorSpace.Right +
                         ";" + face.FaceBoundingBoxInInfraredSpace.Bottom + ";" + face.FaceBoundingBoxInInfraredSpace.Left + ";" + face.FaceBoundingBoxInInfraredSpace.Top + ";" + face.FaceBoundingBoxInInfraredSpace.Right +
@@ -1600,7 +1613,7 @@ namespace Kinect_2_Streams_Recorder
 
                 var vertices = tempHDFaceData.vertices;
 
-                this.hdfacefile.Write(tempHDFaceData.relativeTime.Ticks + ";" + tempHDFaceData.timestamp + ";" + tempHDFaceData.trackingId + ";" + tempHDFaceData.isTrackingIdValid + ";");
+                this.hdfacefile.Write(tempHDFaceData.relativeTime.Ticks + ";" + tempHDFaceData.relativeTimeColor.Ticks + ";" + tempHDFaceData.timestamp + ";" + tempHDFaceData.trackingId + ";" + tempHDFaceData.isTrackingIdValid + ";");
 
                 DepthSpacePoint depthSpacePoint;
                 ColorSpacePoint colorSpacePoint;
@@ -1940,7 +1953,7 @@ namespace Kinect_2_Streams_Recorder
 
                 //                this.directoryToSave = Path.Combine("C:\\Kinect2StreamsRecorder", DateTimeOffset.Now.ToString("yyyy_MM_dd-HH_mm_ss"));
                 if (!string.IsNullOrWhiteSpace(secondary_path_val)) {
-                    this.directoryToSave = Path.Combine(main_path_val, "Kinect2StreamsRecorder", secondary_path_val , DateTimeOffset.Now.ToString("yyyy_MM_dd-HH_mm_ss"));
+                    this.directoryToSave = Path.Combine(main_path_val, secondary_path_val , DateTimeOffset.Now.ToString("yyyy_MM_dd-HH_mm_ss"));
                 }
                 else
                 {
