@@ -21,10 +21,15 @@ saved in a different folder according to the timestamp it started. Upon stopping
 be written to the disk.
 
 ## Data Recorded Format
-This area will be extended very soon especially for the skeleton, face and hdface streams.
-* Color stream is saved in JPEG format with a csv containing a unix format timestamp and relative ticks information on all frames.
-* Depth stream is saved in binary format with a csv containing a unix format timestamp and relative ticks information on all frames.
-To reconstruct the image you can use 
+When all options are selected the directory structure is as follows:
+
+${selected_dir}/${subject}/YYY_mm_dd-hh_mm_ss/
+
+* /Color Color frames saved in JPEG format. Additionally stored is 'colorData.csv' containing the frame counter (note it does not start from 1), the relative time since kinect was opened (https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) and the unix time stamp of the frame (https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx).
+
+* /Depth Depth frames saved in binary format. Additionally stored is 'depthData.csv' containing the frame counter (note it does not start from 1), the relative time since kinect was opened (https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan), the unix time stamp of the frame (https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters.
+
+To reconstruct a depth image you can use 
 ```python
 import numpy as np
 import os
