@@ -31,7 +31,7 @@ since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-
 
 ### /Depth
 Depth frames saved in JPEG format. Additionally stored is 'depthData.csv' containing the frame counter (note it does not start from 1), the [relative time](https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) 
-since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters of the frames. Frames are saved in format: ${relative_time}\_{counter}.jpg. 
+since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters of the frames. Frames are saved in format: ${relative_time}\_{counter}.txt. 
 
 To reconstruct a depth image you can use 
 ```python
@@ -48,7 +48,7 @@ plt.show()
 
 ### /BodyIndex
 * Body Index frames saved in binary format. Additionally stored is 'bodyIndexData.csv' containing the frame counter (note it does not start from 1), the [relative time](https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) 
-since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters of the frames. Frames are saved in format: ${relative_time}\_{counter}.jpg. 
+since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters of the frames. Frames are saved in format: ${relative_time}\_{counter}.txt. 
 
 To reconstruct a body index image you can use 
 ```python
@@ -90,8 +90,8 @@ The skeleton is saved in csv format with semicolon separators. For each frame al
 ### /Face
 The face is saved in csv format with semicolon separators. Each row is associated to a detected face.
 Each row contains the following data:
-* 0: Relative time of the face frame
-* 1: Relative time of the associated depth frame
+* 0: Relative time of the associated body frame
+* 1: Relative time of the associated color frame
 * 2: Unix timestamp
 * 3: Tracking ID of associated body
 * 4: If the tracking is valid
