@@ -25,6 +25,12 @@ When all options are selected the directory structure is as follows:
 
 ${selected_dir}/${subject}/YYY_mm_dd-hh_mm_ss/
 
+### log.txt 
+The log has info about the recorded frames and what the ideal number of frames (according to the recording time) should be.
+
+### calib.txt 
+This file stores the [depth to camera space](https://msdn.microsoft.com/en-us/library/windowspreview.kinect.coordinatemapper.getdepthframetocameraspacetable.aspx) lookup table. Also stores FocalLengthX, FocalLengthY, PrincipalPointX, PrincipalPointY, RadialDistortionSecondOrder, RadialDistortionFourthOrder and RadialDistortionSixthOrder.
+
 ### /Color 
 Color frames saved in JPEG format. Additionally stored is 'colorData.csv' containing the frame counter (note it does not start from 1), the [relative time](https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) 
 since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx)  of the frames. Frames are saved in format: ${relative_time}\_{counter}.jpg.
