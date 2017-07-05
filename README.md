@@ -25,9 +25,13 @@ When all options are selected the directory structure is as follows:
 
 ${selected_dir}/${subject}/YYY_mm_dd-hh_mm_ss/
 
-* /Color Color frames saved in JPEG format. Additionally stored is 'colorData.csv' containing the frame counter (note it does not start from 1), the relative time since kinect was opened (https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) and the unix time stamp of the frame (https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx).
+### /Color 
+Color frames saved in JPEG format. Additionally stored is 'colorData.csv' containing the frame counter (note it does not start from 1), the [relative time](https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) 
+since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx)  of the frames. Frames are saved in format: ${relative_time}\_{counter}.jpg.
 
-* /Depth Depth frames saved in binary format. Additionally stored is 'depthData.csv' containing the frame counter (note it does not start from 1), the relative time since kinect was opened (https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan), the unix time stamp of the frame (https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters.
+### /Depth
+Depth frames saved in JPEG format. Additionally stored is 'depthData.csv' containing the frame counter (note it does not start from 1), the [relative time](https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) 
+since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters of the frames. Frames are saved in format: ${relative_time}\_{counter}.jpg. 
 
 To reconstruct a depth image you can use 
 ```python
@@ -41,16 +45,85 @@ arr = np.fromfile(file, np.int16)
 plt.imshow(arr.reshape((512,424), order='F'), cmap='gray')
 plt.show()
 ```
-* Body Index stream is saved in binary format with a csv containing a unix format timestamp and relative ticks information on all frames.
-The above code works for the body index stream as well but you have to replace np.int16 with np.uint8.
-* The skeleton is saved in csv format with comma separators. For each body frame all 6 bodies are saved detected or not.
-* Face and FaceHD are saved in csv format as well with comma separator. Because face streams cannot be obtained with multisourceframe 
-the rows contain the frames where the face detected is valid. All facial information is saved in the csvs (except for the face model parameters
-in face hd though the vertices of the hd mesh are saved). 
-* Audio is saved in .raw format while the beam information for each subframe is saved in .csv. To convert it to wav you can use sox:
+
+### /BodyIndex
+* Body Index frames saved in binary format. Additionally stored is 'bodyIndexData.csv' containing the frame counter (note it does not start from 1), the [relative time](https://docs.microsoft.com/en-us/uwp/api/Windows.Foundation.TimeSpan) 
+since kinect was opened and the [unix time stamp](https://msdn.microsoft.com/en-us/library/system.datetimeoffset.tounixtimemilliseconds(v=vs.110).aspx), the min, and the max reliable depth in millimeters of the frames. Frames are saved in format: ${relative_time}\_{counter}.jpg. 
+
+To reconstruct a body index image you can use 
+```python
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+from PIL import Image
+
+file = "depth.txt"
+arr = np.fromfile(file, np.uint8)
+plt.imshow(arr.reshape((512,424), order='F'), cmap='gray')
+plt.show()
+```
+### /Skeleton
+The skeleton is saved in csv format with semicolon separators. For each frame all 6 bodies are saved detected or not (which results in lot of useless rows). Each row contains the following data:
+* 0: Counter of associated depth frame
+* 1: Relative time
+* 2: Unix timestamp
+* 3: Joint Name
+* 4: Joint Tracking State
+* 5-7: 3D joint position
+* 8-9: Joint position in Depth Space
+* 10-11: Joint position in Color Space
+* 12-15: Joint Orientation (quaternion)
+
+... repeated for all 25 joints ...
+
+* 329: ClippedEdges 
+* 330: HandLeftState 
+* 331: HandLeftConfidence
+* 332: HandRightState 
+* 333: HandRightConfidence
+* 334: If body is tracked
+* 335: Joint Count
+* 336: Tracking ID of body
+* 337-338: Lean
+* 339: Lean Tracking State
+
+### /Face
+The face is saved in csv format with semicolon separators. Each row is associated to a detected face.
+Each row contains the following data:
+* 0: Relative time of the face frame
+* 1: Relative time of the associated depth frame
+* 2: Unix timestamp
+* 3: Tracking ID of associated body
+* 4: If the tracking is valid
+* 5-8: Face Bounding box in Color Space (Bottom, Left, Top, Right)
+* 9-12: Face Bounding box in Depth Space (Bottom, Left, Top, Right)
+* 13-28: Face Properties (ith column has property name, ith + 1 column has property value) 
+* 29-43: Facial landmarks in Color Space (ith column has landmark name, ith+1 and ith+2 have X and Y positions)
+* 44-58: Facial landmarks in Color Space (ith column has landmark name, ith+1 and ith+2 have X and Y positions)
+* 59-62: Facial Rotation quaternion
+* 63-65: Yaw Pitch Roll (calculated from the above quaternion)
+
+### /FaceHD
+The hd face is saved in csv format with semicolon separators. Each row is associated to a detected face.
+Each row contains the following data:
+* 0: Relative time of the hd face frame
+* 1: Relative time of the associated depth frame
+* 2: Unix timestamp
+* 3: Tracking ID of associated body
+* 4: If the tracking is valid
+* 5-9433: All 1347 vertices of the hd face. For each vertice the following are saved: (3D.X, 3D.Y, 3D.Z, DepthX, DepthY, ColorX, ColorY)
+* 9434-9467: Face shape animations (ith column has animation name, ith+1 has value)
+* 9468-9471: Facial Rotation quaternion
+* 9472-9474: Yaw Pitch Roll (calculated from the above quaternion)
+* 9475-9481: (3D.X, 3D.Y, 3D.Z, DepthX, DepthY, ColorX, ColorY)
+* 9482: Quality
+
+### /Audio
+Audio is saved in .raw format while the beam information for each subframe is saved in .csv. To convert it to wav you can use sox:
 ```
 $ sox -r 16000 -c 1 -b 32 -e floating_point audio.raw audio.wav
 ```
+
 ## Contributing
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
